@@ -37,7 +37,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     val osName = System.getProperty("os.name")
     val cores = Runtime.getRuntime().availableProcessors()
     val deviceModel = Build.MODEL
-    val deviceCpu = Build.SUPPORTED_ABIS.joinToString(", ") // CPU architectures
+    val deviceCpu = Build.SUPPORTED_ABIS.joinToString(", ")
 
     Text(
         text = "Hello $name! I am running on $osName with $cores cores.\n" +

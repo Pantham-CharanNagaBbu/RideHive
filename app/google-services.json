@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "749921480758",
+    "project_id": "ridehive-447ae",
+    "storage_bucket": "ridehive-447ae.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:749921480758:android:d82b4cca21cab614302897",
+        "android_client_info": {
+          "package_name": "uk.ac.tees.mad.ridehive"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBawBdYfacBy_3FMexJeiLGTQWGUcG1Vd8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
