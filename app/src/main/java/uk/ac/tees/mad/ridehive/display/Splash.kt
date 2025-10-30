@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import uk.ac.tees.mad.ridehive.R
 
 @Composable
@@ -44,6 +45,8 @@ fun Splash(innerPadding: PaddingValues) {
 
     LaunchedEffect(Unit) {
         startAnimation = true
+        delay(3000)
+        //navController.navigate("login")
     }
 
 
