@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import uk.ac.tees.mad.ridehive.display.Login
 import uk.ac.tees.mad.ridehive.display.SignUp
 import uk.ac.tees.mad.ridehive.display.Splash
 import uk.ac.tees.mad.ridehive.ui.theme.RideHiveTheme
@@ -40,12 +41,12 @@ sealed class navigation(val route : String){
 
 @Composable
 fun RideHive(innerPadding: PaddingValues) {
-    NavHost(rememberNavController(), startDestination = navigation.SignUp.route){
+    NavHost(rememberNavController(), startDestination = navigation.Login.route){
         composable(navigation.Splash.route){
             Splash(innerPadding)
         }
         composable(navigation.Login.route){
-            //Login()
+            Login()
         }
         composable(navigation.SignUp.route){
             SignUp()
