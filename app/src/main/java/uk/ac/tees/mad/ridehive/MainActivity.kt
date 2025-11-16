@@ -12,11 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
 import uk.ac.tees.mad.ridehive.display.Login
 import uk.ac.tees.mad.ridehive.display.SignUp
 import uk.ac.tees.mad.ridehive.display.Splash
 import uk.ac.tees.mad.ridehive.ui.theme.RideHiveTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,15 +43,32 @@ sealed class navigation(val route : String){
 
 @Composable
 fun RideHive(innerPadding: PaddingValues) {
-    NavHost(rememberNavController(), startDestination = navigation.Login.route){
+    val navController = rememberNavController()
+    NavHost(navController, startDestination = navigation.Login.route){
         composable(navigation.Splash.route){
             Splash(innerPadding)
         }
         composable(navigation.Login.route){
-            Login()
+            Login(
+                onLoginClick = { email, password ->
+                },
+                onNavigateToSignUp = {
+                    navController.navigate(navigation.SignUp.route){
+                        popUpTo(0)
+                    }
+                }
+            )
         }
         composable(navigation.SignUp.route){
-            SignUp()
+            SignUp(
+                onSignUpClick = { firstName, lastName, email, password ->
+                },
+                onNavigateToLogin = {
+                    navController.navigate(navigation.Login.route){
+                        popUpTo(0)
+                    }
+                }
+            )
         }
     }
 }

@@ -36,8 +36,8 @@ import uk.ac.tees.mad.ridehive.ui.theme.RideHiveTextPrimary
 
 @Composable
 fun Login(
-    onLoginClick: (String, String) -> Unit = { _, _ -> },
-    onNavigateToSignUp: () -> Unit = {}
+    onLoginClick: (String, String) -> Unit ,
+    onNavigateToSignUp: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -52,7 +52,6 @@ fun Login(
             .padding(24.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        // 🔹 Branding / Title
         Text(
             text = "RideHive",
             style = MaterialTheme.typography.headlineLarge,
@@ -66,7 +65,6 @@ fun Login(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 🔹 Email
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -79,7 +77,6 @@ fun Login(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 🔹 Password
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -99,7 +96,6 @@ fun Login(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 🔹 Login Button
         Button(
             onClick = { onLoginClick(email, password) },
             enabled = isFormValid,
@@ -115,7 +111,6 @@ fun Login(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 🔹 Navigate to Sign Up
         TextButton(onClick = onNavigateToSignUp) {
             Text(
                 text = "Don’t have an account? Sign up",

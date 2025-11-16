@@ -35,8 +35,8 @@ import uk.ac.tees.mad.ridehive.ui.theme.RideHiveTextSecondary
 
 @Composable
 fun SignUp(
-    onSignUpClick: (String, String, String, String) -> Unit = { _, _, _, _ -> },
-    onNavigateToLogin: () -> Unit = {}
+    onSignUpClick: (String, String, String, String) -> Unit,
+    onNavigateToLogin: () -> Unit
 ) {
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
