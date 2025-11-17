@@ -1,33 +1,46 @@
 package uk.ac.tees.mad.ridehive.display
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
+import kotlinx.coroutines.flow.collectLatest
+import uk.ac.tees.mad.ridehive.RHViewModel
+import uk.ac.tees.mad.ridehive.navigation
 import uk.ac.tees.mad.ridehive.ui.theme.RideHiveBackground
 import uk.ac.tees.mad.ridehive.ui.theme.RideHivePrimary
 import uk.ac.tees.mad.ridehive.ui.theme.RideHiveSecondary
@@ -35,8 +48,9 @@ import uk.ac.tees.mad.ridehive.ui.theme.RideHiveTextSecondary
 
 @Composable
 fun SignUp(
-    onSignUpClick: (String, String, String, String) -> Unit,
-    onNavigateToLogin: () -> Unit
+    onNavigateToLogin: () -> Unit,
+    navController: NavHostController,
+    viewModel: RHViewModel = hiltViewModel()
 ) {
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
@@ -46,119 +60,161 @@ fun SignUp(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    var isLoading by remember { mutableStateOf(false) }
+
     val isFormValid = firstName.isNotBlank() &&
             lastName.isNotBlank() &&
             android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() &&
             password.length >= 6 &&
             password == confirmPassword
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "RideHive",
-            style = MaterialTheme.typography.headlineLarge,
-            color = RideHivePrimary
-        )
-        Text(
-            text = "Create your account",
-            style = MaterialTheme.typography.bodyLarge,
-            color = RideHiveTextSecondary
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        OutlinedTextField(
-            value = firstName,
-            onValueChange = { firstName = it },
-            label = { Text("First Name") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            shape = RoundedCornerShape(26.dp)
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = lastName,
-            onValueChange = { lastName = it },
-            label = { Text("Last Name") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            shape = RoundedCornerShape(26.dp)
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            shape = RoundedCornerShape(26.dp)
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(image, contentDescription = null, tint = RideHivePrimary)
+    LaunchedEffect(Unit) {
+        viewModel.authEvents.collectLatest { event ->
+            when (event) {
+                is RHViewModel.AuthEvent.Loading -> {
+                    isLoading = true
                 }
-            },
-            shape = RoundedCornerShape(26.dp)
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        OutlinedTextField(
-            value = confirmPassword,
-            onValueChange = { confirmPassword = it },
-            label = { Text("Confirm Password") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
-                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                    Icon(image, contentDescription = null, tint = RideHivePrimary)
+                is RHViewModel.AuthEvent.Success -> {
+                    isLoading = false
+                    snackbarHostState.showSnackbar(event.message)
+                    navController.navigate(navigation.Home.route)
                 }
-            },
-            shape = RoundedCornerShape(26.dp)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = { onSignUpClick(firstName, lastName, email, password) },
-            enabled = isFormValid,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = RideHivePrimary,
-                contentColor = RideHiveBackground
-            )
-        ) {
-            Text("Sign Up")
+                is RHViewModel.AuthEvent.Error -> {
+                    isLoading = false
+                    snackbarHostState.showSnackbar(event.error)
+                }
+            }
         }
+    }
 
-        Spacer(modifier = Modifier.height(16.dp))
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "RideHive",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = RideHivePrimary
+                )
+                Text(
+                    text = "Create your account",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = RideHiveTextSecondary
+                )
 
-        TextButton(onClick = onNavigateToLogin) {
-            Text(
-                text = "Already have an account? Log in",
-                color = RideHiveSecondary
-            )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                OutlinedTextField(
+                    value = firstName,
+                    onValueChange = { firstName = it },
+                    label = { Text("First Name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(26.dp)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = { lastName = it },
+                    label = { Text("Last Name") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(26.dp)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(26.dp)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val image =
+                            if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(image, contentDescription = null, tint = RideHivePrimary)
+                        }
+                    },
+                    shape = RoundedCornerShape(26.dp)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Confirm Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val image =
+                            if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                        IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                            Icon(image, contentDescription = null, tint = RideHivePrimary)
+                        }
+                    },
+                    shape = RoundedCornerShape(26.dp)
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = {
+                        viewModel.signUp(firstName, lastName, email, password)
+                    },
+                    enabled = isFormValid && !isLoading,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(RideHivePrimary)
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = RideHiveBackground,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        Text("Sign Up", color = RideHiveBackground)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                TextButton(onClick = onNavigateToLogin) {
+                    Text(
+                        text = "Already have an account? Log in",
+                        color = RideHiveSecondary
+                    )
+                }
+            }
         }
     }
 }

@@ -23,11 +23,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import kotlinx.coroutines.delay
 import uk.ac.tees.mad.ridehive.R
+import uk.ac.tees.mad.ridehive.RHViewModel
+import uk.ac.tees.mad.ridehive.navigation
 
 @Composable
-fun Splash(innerPadding: PaddingValues) {
+fun Splash(innerPadding: PaddingValues,
+           navController : NavHostController,
+           viewModel: RHViewModel = hiltViewModel()
+           ) {
     val boxWidth = LocalConfiguration.current.screenWidthDp.dp
     val boxHeight = LocalConfiguration.current.screenHeightDp.dp
     var startAnimation by remember { mutableStateOf(false) }
@@ -46,7 +53,11 @@ fun Splash(innerPadding: PaddingValues) {
     LaunchedEffect(Unit) {
         startAnimation = true
         delay(3000)
-        //navController.navigate("login")
+        if (viewModel.userLogin.value) {
+            navController.navigate(navigation.Home.route)
+        } else {
+            navController.navigate(navigation.Login.route)
+        }
     }
 
 

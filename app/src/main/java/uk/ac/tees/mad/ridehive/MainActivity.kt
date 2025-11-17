@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
+import uk.ac.tees.mad.ridehive.display.Home
 import uk.ac.tees.mad.ridehive.display.Login
 import uk.ac.tees.mad.ridehive.display.SignUp
 import uk.ac.tees.mad.ridehive.display.Splash
@@ -38,6 +39,7 @@ sealed class navigation(val route : String){
     object Splash : navigation("splash")
     object Login : navigation("login")
     object SignUp : navigation("signup")
+    object Home : navigation("home")
 
 }
 
@@ -46,12 +48,12 @@ fun RideHive(innerPadding: PaddingValues) {
     val navController = rememberNavController()
     NavHost(navController, startDestination = navigation.Login.route){
         composable(navigation.Splash.route){
-            Splash(innerPadding)
+            Splash(innerPadding,
+                navController)
         }
         composable(navigation.Login.route){
             Login(
-                onLoginClick = { email, password ->
-                },
+                navController = navController,
                 onNavigateToSignUp = {
                     navController.navigate(navigation.SignUp.route){
                         popUpTo(0)
@@ -61,14 +63,16 @@ fun RideHive(innerPadding: PaddingValues) {
         }
         composable(navigation.SignUp.route){
             SignUp(
-                onSignUpClick = { firstName, lastName, email, password ->
-                },
+                navController = navController,
                 onNavigateToLogin = {
                     navController.navigate(navigation.Login.route){
                         popUpTo(0)
                     }
                 }
             )
+        }
+        composable(navigation.Home.route){
+            Home()
         }
     }
 }
