@@ -46,7 +46,7 @@ sealed class navigation(val route : String){
 @Composable
 fun RideHive(innerPadding: PaddingValues) {
     val navController = rememberNavController()
-    NavHost(navController, startDestination = navigation.Login.route){
+    NavHost(navController, startDestination = navigation.Splash.route){
         composable(navigation.Splash.route){
             Splash(innerPadding,
                 navController)

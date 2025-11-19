@@ -19,14 +19,7 @@ constructor(
 ): ViewModel() {
 
     val userLogin = mutableStateOf(false)
-    init {
-        if (auth.currentUser != null) {
-            viewModelScope.launch {
-                _authEvents.send(AuthEvent.Success("Already logged in"))
-            }
-            userLogin.value = true
-        }
-    }
+
     sealed class AuthEvent {
         data class Success(val message: String) : AuthEvent()
         data class Error(val error: String) : AuthEvent()
@@ -36,6 +29,14 @@ constructor(
     private val _authEvents = Channel<AuthEvent>()
     val authEvents = _authEvents.receiveAsFlow()
 
+    init {
+        if (auth.currentUser != null) {
+            viewModelScope.launch {
+                _authEvents.send(AuthEvent.Success("Already logged in"))
+            }
+            userLogin.value = true
+        }
+    }
     fun signUp(
         firstName: String,
         lastName: String,

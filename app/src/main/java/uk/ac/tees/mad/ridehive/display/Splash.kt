@@ -31,13 +31,15 @@ import uk.ac.tees.mad.ridehive.RHViewModel
 import uk.ac.tees.mad.ridehive.navigation
 
 @Composable
-fun Splash(innerPadding: PaddingValues,
-           navController : NavHostController,
-           viewModel: RHViewModel = hiltViewModel()
-           ) {
+fun Splash(
+    innerPadding: PaddingValues,
+    navController: NavHostController,
+    viewModel: RHViewModel = hiltViewModel()
+) {
     val boxWidth = LocalConfiguration.current.screenWidthDp.dp
     val boxHeight = LocalConfiguration.current.screenHeightDp.dp
     var startAnimation by remember { mutableStateOf(false) }
+
     val offsetX by animateDpAsState(
         targetValue = if (startAnimation) boxWidth else 0.dp,
         animationSpec = tween(durationMillis = 3000),
@@ -54,21 +56,34 @@ fun Splash(innerPadding: PaddingValues,
         startAnimation = true
         delay(3000)
         if (viewModel.userLogin.value) {
-            navController.navigate(navigation.Home.route)
+            navController.navigate(navigation.Home.route) {
+                popUpTo(navigation.Splash.route) { inclusive = true }
+            }
         } else {
-            navController.navigate(navigation.Login.route)
+            navController.navigate(navigation.Login.route) {
+                popUpTo(navigation.Splash.route) { inclusive = true }
+            }
         }
     }
 
-
-    Box(modifier = Modifier.fillMaxSize()){
-        Column(modifier = Modifier.fillMaxSize(),
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(painter = painterResource(id = R.drawable.app_icon),contentDescription = null,
-                modifier = Modifier.size(imageSize).clip(RoundedCornerShape(50.dp)))
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.app_icon),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(imageSize)
+                    .clip(RoundedCornerShape(50.dp))
+            )
         }
-        Image(painterResource(R.drawable.car__1_),contentDescription = null,
-            modifier = Modifier.offset(x = offsetX, y = boxHeight/2 - 70.dp))
+        Image(
+            painterResource(R.drawable.car__1_),
+            contentDescription = null,
+            modifier = Modifier.offset(x = offsetX, y = boxHeight / 2 - 70.dp)
+        )
     }
 }
