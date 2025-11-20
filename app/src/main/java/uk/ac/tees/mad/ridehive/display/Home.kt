@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import uk.ac.tees.mad.ridehive.CustomBottomNavBar
 import uk.ac.tees.mad.ridehive.ui.theme.*
 
 data class Ride(
@@ -45,6 +46,12 @@ fun Home() {
                         style = MaterialTheme.typography.headlineSmall
                     )
                 }
+            )
+        },
+        bottomBar = {
+            CustomBottomNavBar(
+                selectedRoute = "home",
+                onNavItemClick = { /* Handle click */ }
             )
         }
     ) { padding ->
