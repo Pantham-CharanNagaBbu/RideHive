@@ -56,6 +56,7 @@ dependencies {
     implementation("androidx.room:room-runtime:2.7.0-alpha05")
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.play.services.location)
     kapt("androidx.room:room-compiler:2.7.0-alpha05")
     implementation("androidx.room:room-ktx:2.7.0-alpha05")
     implementation("io.coil-kt:coil-compose:2.7.0")

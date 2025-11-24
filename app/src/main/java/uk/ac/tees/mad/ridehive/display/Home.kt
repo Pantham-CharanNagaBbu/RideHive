@@ -1,6 +1,10 @@
 package uk.ac.tees.mad.ridehive.display
 
 import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -25,8 +29,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import uk.ac.tees.mad.ridehive.CustomBottomNavBar
+import uk.ac.tees.mad.ridehive.RHViewModel
+import uk.ac.tees.mad.ridehive.navigation
 import uk.ac.tees.mad.ridehive.ui.theme.*
 
 data class Ride(
@@ -39,7 +48,10 @@ data class Ride(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Home() {
+fun Home(
+    navController: NavController,
+    viewModel: RHViewModel = hiltViewModel()
+) {
     val rides = listOf(
         Ride("John Doe", "Hostel", "Teesside University", "10:00 AM", 2),
         Ride("Emma Watson", "Downtown", "Teesside University", "9:30 AM", 1),
@@ -56,19 +68,15 @@ fun Home() {
         )
     }
 
-    // Launcher for requesting the permission (must be defined before use)
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         isLocationPermissionGranted = isGranted
         if (isGranted) {
-            // Handle location permission granted (e.g., start location services)
         } else {
-            // Handle location permission denied (e.g., show rationale or snackbar)
         }
     }
 
-    // Request permission if not already granted (runs once on composition)
     LaunchedEffect(Unit) {
         if (!isLocationPermissionGranted) {
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -89,8 +97,8 @@ fun Home() {
         },
         bottomBar = {
             CustomBottomNavBar(
-                selectedRoute = "home",
-                onNavItemClick = { /* Handle click */ }
+                selectedRoute = navigation.Home.route,
+                navController = navController
             )
         }
     ) { padding ->
@@ -101,14 +109,62 @@ fun Home() {
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            // Optional: Show permission status or conditional content here
             if (!isLocationPermissionGranted) {
-                Text(
-                    text = "Location permission is required for full functionality.",
-                    color = RideHiveTextSecondary,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(modifier = Modifier.height(12.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Location permission is required to find rides near you.",
+                        color = RideHiveTextPrimary,
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            // Check if we should show rationale or open settings
+                            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                                    context as Activity,
+                                    Manifest.permission.ACCESS_FINE_LOCATION
+                                )) {
+                                // Show rationale dialog (or snackbar) explaining why permission is needed
+                                // For simplicity, directly request again here
+                                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                            } else {
+                                // Permission permanently denied, guide to settings
+                                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).also {
+                                    val uri = Uri.fromParts("package", context.packageName, null)
+                                    it.data = uri
+                                    context.startActivity(it)
+                                }
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = RideHivePrimary),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth(0.6f)
+                    ) {
+                        Text(
+                            text = "Grant Location Permission",
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextButton(
+                        onClick = {
+                            // Optional: Proceed without location (e.g., show all rides or limited mode)
+                        }
+                    ) {
+                        Text(
+                            text = "Continue without location",
+                            color = RideHiveTextSecondary,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
             }
 
             Text(

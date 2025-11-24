@@ -20,23 +20,20 @@ import uk.ac.tees.mad.ridehive.display.Splash
 import uk.ac.tees.mad.ridehive.ui.theme.RideHiveTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Route
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import uk.ac.tees.mad.ridehive.display.PostRide
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -62,12 +59,12 @@ data class NavItem(
 @Composable
 fun CustomBottomNavBar(
     selectedRoute: String,
-    onNavItemClick: (String) -> Unit,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     val navItems = listOf(
         NavItem("Home", Icons.Default.Home, navigation.Home.route),
-        NavItem("Post", Icons.Default.Add, ""),
+        NavItem("Post", Icons.Default.Add, navigation.PostRide.route),
         NavItem("My Rides", Icons.Default.Route, ""),
         NavItem("Profile", Icons.Default.Person, "")
     )
@@ -102,7 +99,7 @@ fun CustomBottomNavBar(
                             )
                             .padding(12.dp)
                     ) {
-                        IconButton(onClick = { onNavItemClick(item.route) }) {
+                        IconButton(onClick = { navController.navigate(item.route) }) {
                             Icon(
                                 imageVector = item.icon,
                                 contentDescription = item.label,
@@ -119,22 +116,13 @@ fun CustomBottomNavBar(
     }
 }
 
-@Composable
-@Preview
-fun CustomBottomNavBarPreview() {
-    MaterialTheme {
-        CustomBottomNavBar(
-            selectedRoute = "home",
-            onNavItemClick = { /* Handle click */ }
-        )
-    }
-}
 
 sealed class navigation(val route : String){
     object Splash : navigation("splash")
     object Login : navigation("login")
     object SignUp : navigation("signup")
     object Home : navigation("home")
+    object PostRide : navigation("postride")
 
 }
 
@@ -167,7 +155,11 @@ fun RideHive(innerPadding: PaddingValues) {
             )
         }
         composable(navigation.Home.route){
-            Home()
+            Home(navController)
+        }
+        composable(navigation.PostRide.route){
+            PostRide(navController,
+                onPostRideClick = { from, to, date, time, seats ->})
         }
     }
 }
