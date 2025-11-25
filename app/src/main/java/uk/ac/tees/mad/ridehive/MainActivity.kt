@@ -158,8 +158,7 @@ fun RideHive(innerPadding: PaddingValues) {
             Home(navController)
         }
         composable(navigation.PostRide.route){
-            PostRide(navController,
-                onPostRideClick = { from, to, date, time, seats ->})
+            PostRide(navController)
         }
     }
 }

@@ -1,5 +1,7 @@
 package uk.ac.tees.mad.ridehive
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,6 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import uk.ac.tees.mad.ridehive.display.Destination
 import javax.inject.Inject
 
 @HiltViewModel
@@ -96,4 +99,32 @@ constructor(
                 }
         }
     }
+
+    fun onPostRideClick(
+        context : Context,
+        current: String,
+        destination: Destination,
+        date: String,
+        time: String,
+        seats: String,
+    ) {
+        viewModelScope.launch {
+            firestore.collection("rides").add(
+                mapOf(
+                    "from" to current,
+                    "destinationName" to destination.name,
+                    "destinationLatitude" to destination.lat,
+                    "destinationLongitude" to destination.lng,
+                    "date" to date,
+                    "time" to time,
+                    "seats" to seats.toInt()
+                )
+            ).addOnSuccessListener {
+                Toast.makeText(context, "Ride posted successfully", Toast.LENGTH_SHORT).show()
+            }.addOnSuccessListener {
+                Toast.makeText(context, "Failed to post ride", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
 }

@@ -20,7 +20,9 @@ import uk.ac.tees.mad.ridehive.navigation
 import uk.ac.tees.mad.ridehive.ui.theme.*
 import android.location.Location
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.location.LocationServices
+import uk.ac.tees.mad.ridehive.RHViewModel
 
 fun calculateDistance(
     fromLat: Double,
@@ -46,7 +48,7 @@ val destinations = listOf(
 @Composable
 fun PostRide(
     navController: NavHostController,
-    onPostRideClick: (String, Destination, String, String, String) -> Unit
+    viewModel: RHViewModel = hiltViewModel(),
 ) {
     var currentLat by remember { mutableStateOf<Double?>(null) }
     var currentLng by remember { mutableStateOf<Double?>(null) }
@@ -108,7 +110,6 @@ fun PostRide(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ✅ Current Location info
             Text(
                 text = if (currentLat != null) "Pickup: Your Current Location" else "Fetching location...",
                 style = MaterialTheme.typography.bodyLarge,
@@ -117,7 +118,6 @@ fun PostRide(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // ✅ Destination Dropdown
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }
@@ -163,7 +163,6 @@ fun PostRide(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // ✅ Date
             OutlinedTextField(
                 value = date,
                 onValueChange = { date = it },
@@ -177,7 +176,6 @@ fun PostRide(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // ✅ Time
             OutlinedTextField(
                 value = time,
                 onValueChange = { time = it },
@@ -191,7 +189,6 @@ fun PostRide(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // ✅ Seats
             OutlinedTextField(
                 value = seats,
                 onValueChange = { seats = it },
@@ -219,9 +216,7 @@ fun PostRide(
             Button(
                 onClick = {
                     selectedDestination?.let {
-                        onPostRideClick(
-                            "${currentLat},${currentLng}", it, date, time, seats
-                        )
+                        viewModel.onPostRideClick(context,"${currentLat},${currentLng}", it, date, time, seats)
                     }
                 },
                 enabled = isFormValid,
