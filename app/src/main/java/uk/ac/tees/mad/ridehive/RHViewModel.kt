@@ -107,6 +107,8 @@ constructor(
         date: String,
         time: String,
         seats: String,
+        onSuccess : () -> Unit,
+        onError  : () -> Unit
     ) {
         viewModelScope.launch {
             firestore.collection("rides").add(
@@ -120,8 +122,10 @@ constructor(
                     "seats" to seats.toInt()
                 )
             ).addOnSuccessListener {
+                onSuccess()
                 Toast.makeText(context, "Ride posted successfully", Toast.LENGTH_SHORT).show()
-            }.addOnSuccessListener {
+            }.addOnFailureListener {
+                onError()
                 Toast.makeText(context, "Failed to post ride", Toast.LENGTH_SHORT).show()
             }
         }

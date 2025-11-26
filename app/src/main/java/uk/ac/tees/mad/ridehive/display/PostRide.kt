@@ -53,6 +53,10 @@ fun PostRide(
     var currentLat by remember { mutableStateOf<Double?>(null) }
     var currentLng by remember { mutableStateOf<Double?>(null) }
 
+    var loading by remember {
+        mutableStateOf(false)
+    }
+
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
@@ -216,7 +220,21 @@ fun PostRide(
             Button(
                 onClick = {
                     selectedDestination?.let {
-                        viewModel.onPostRideClick(context,"${currentLat},${currentLng}", it, date, time, seats)
+                        loading = true
+                        viewModel.onPostRideClick(context,"${currentLat},${currentLng}", it, date, time, seats,
+                            onSuccess={
+                                currentLat = null
+                                currentLng = null
+                                selectedDestination = null
+                                date = ""
+                                time = ""
+                                seats = ""
+                                notes = ""
+                                loading = false
+                            },
+                            onError={
+                                loading = false
+                            })
                     }
                 },
                 enabled = isFormValid,
@@ -227,7 +245,14 @@ fun PostRide(
                     contentColor = RideHiveBackground
                 )
             ) {
-                Text("Post Ride")
+                if (loading) {
+                    CircularProgressIndicator(
+                        color = RideHiveBackground,
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Text("Post Ride")
+                }
             }
         }
     }
