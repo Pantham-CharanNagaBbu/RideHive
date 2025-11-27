@@ -1,6 +1,7 @@
 package uk.ac.tees.mad.ridehive
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -12,7 +13,10 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import uk.ac.tees.mad.ridehive.display.Destination
+import uk.ac.tees.mad.ridehive.model.Ride
+import uk.ac.tees.mad.ridehive.model.Users
 import javax.inject.Inject
+import kotlin.jvm.java
 
 @HiltViewModel
 class RHViewModel @Inject
@@ -22,6 +26,8 @@ constructor(
 ): ViewModel() {
 
     val userLogin = mutableStateOf(false)
+    val currentUser = mutableStateOf<Users?>(null)
+    val rides = mutableStateOf<List<Ride>>(emptyList())
 
     sealed class AuthEvent {
         data class Success(val message: String) : AuthEvent()
@@ -38,6 +44,25 @@ constructor(
                 _authEvents.send(AuthEvent.Success("Already logged in"))
             }
             userLogin.value = true
+            fetchRides()
+            fetchCurrentUser()
+        }
+    }
+
+    private fun fetchCurrentUser() {
+        viewModelScope.launch {
+            firestore.collection("users")
+                .document(auth.currentUser?.uid ?: "")
+                .get()
+                .addOnSuccessListener {
+                    val user = it.toObject(Users::class.java)
+                    if (user != null) {
+                        currentUser.value = user
+                    }
+                }
+                .addOnFailureListener {
+                    Log.e("RHViewModel", "Error fetching current user: ${it.message}")
+                }
         }
     }
     fun signUp(
@@ -68,6 +93,8 @@ constructor(
                                 .addOnSuccessListener {
                                     viewModelScope.launch {
                                         _authEvents.send(AuthEvent.Success("Account created successfully"))
+                                        fetchCurrentUser()
+                                        fetchRides()
                                     }
                                 }
                                 .addOnFailureListener { e ->
@@ -83,6 +110,16 @@ constructor(
         }
     }
 
+    fun fetchRides(){
+        viewModelScope.launch {
+            firestore.collection("rides")
+                .get().addOnSuccessListener {
+                    rides.value = it.toObjects(Ride::class.java)
+                }.addOnFailureListener {
+                    Log.e("RHViewModel", "Error fetching rides: ${it.message}")
+                }
+        }
+    }
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _authEvents.send(AuthEvent.Loading)
@@ -92,6 +129,8 @@ constructor(
                     viewModelScope.launch {
                         if (task.isSuccessful) {
                             _authEvents.send(AuthEvent.Success("Login successful"))
+                            fetchCurrentUser()
+                            fetchRides()
                         } else {
                             _authEvents.send(AuthEvent.Error(task.exception?.message ?: "Login failed"))
                         }
@@ -113,6 +152,8 @@ constructor(
         viewModelScope.launch {
             firestore.collection("rides").add(
                 mapOf(
+                    "userUid" to auth.currentUser?.uid,
+                    "userName" to currentUser.value?.firstName + " " + currentUser.value?.lastName,
                     "from" to current,
                     "destinationName" to destination.name,
                     "destinationLatitude" to destination.lat,
@@ -123,6 +164,7 @@ constructor(
                 )
             ).addOnSuccessListener {
                 onSuccess()
+                fetchRides()
                 Toast.makeText(context, "Ride posted successfully", Toast.LENGTH_SHORT).show()
             }.addOnFailureListener {
                 onError()

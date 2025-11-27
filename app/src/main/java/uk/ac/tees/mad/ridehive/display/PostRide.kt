@@ -23,17 +23,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.location.LocationServices
 import uk.ac.tees.mad.ridehive.RHViewModel
+import uk.ac.tees.mad.ridehive.utilities.calculateDistance
 
-fun calculateDistance(
-    fromLat: Double,
-    fromLng: Double,
-    toLat: Double,
-    toLng: Double
-): Float {
-    val results = FloatArray(1)
-    Location.distanceBetween(fromLat, fromLng, toLat, toLng, results)
-    return results[0] / 1000f
-}
 
 data class Destination(val name: String, val lat: Double, val lng: Double)
 
