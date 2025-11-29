@@ -8,6 +8,7 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -159,7 +160,8 @@ fun Home(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(rides) { ride ->
-                    RideCard(ride, currentLat, currentLng)
+                    RideCard(ride, currentLat, currentLng, onClick = {navController.navigate(
+                        navigation.Detail.createRoute(ride.rideId))})
                 }
             }
         }
@@ -170,12 +172,11 @@ fun Home(
 fun RideCard(
     ride: Ride,
     currentLat: Double?,
-    currentLng: Double?
+    currentLng: Double?,
+    onClick : () -> Unit
 ) {
-    // Pickup distance (your location → ride.from)
     val pickupDistance = remember(currentLat, currentLng, ride) {
         if (currentLat != null && currentLng != null && ride.from.isNotBlank()) {
-            // Assuming ride.from contains "lat,lng" string
             val parts = ride.from.split(",")
             if (parts.size == 2) {
                 val fromLat = parts[0].toDoubleOrNull()
@@ -206,7 +207,7 @@ fun RideCard(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(

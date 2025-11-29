@@ -160,13 +160,21 @@ constructor(
                     "destinationLongitude" to destination.lng,
                     "date" to date,
                     "time" to time,
-                    "seats" to seats.toInt()
+                    "seats" to seats.toInt(),
+                    "joinedUsers" to emptyList<String>(),
                 )
             ).addOnSuccessListener {
-                onSuccess()
-                fetchRides()
-                Toast.makeText(context, "Ride posted successfully", Toast.LENGTH_SHORT).show()
-            }.addOnFailureListener {
+                firestore.collection("rides").document(it.id).update("rideId", it.id)
+                    .addOnSuccessListener {
+                        onSuccess()
+                        fetchRides()
+                        Toast.makeText(context, "Ride posted successfully", Toast.LENGTH_SHORT)
+                            .show()
+                    }.addOnFailureListener {
+                        onError()
+                        Toast.makeText(context, "Failed to post ride", Toast.LENGTH_SHORT).show()
+                    }
+                    }.addOnFailureListener {
                 onError()
                 Toast.makeText(context, "Failed to post ride", Toast.LENGTH_SHORT).show()
             }

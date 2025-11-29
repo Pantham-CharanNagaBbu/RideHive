@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Route
 import androidx.navigation.NavController
+import uk.ac.tees.mad.ridehive.display.Detail
 import uk.ac.tees.mad.ridehive.display.PostRide
 
 @AndroidEntryPoint
@@ -123,7 +124,9 @@ sealed class navigation(val route : String){
     object SignUp : navigation("signup")
     object Home : navigation("home")
     object PostRide : navigation("postride")
-
+    object Detail : navigation("detail/{id}"){
+        fun createRoute(id: String) = "detail/$id"
+    }
 }
 
 @Composable
@@ -159,6 +162,11 @@ fun RideHive(innerPadding: PaddingValues) {
         }
         composable(navigation.PostRide.route){
             PostRide(navController)
+        }
+        composable(navigation.Detail.route){ backStackEntry ->
+            val rideID = backStackEntry.arguments?.getString("id") ?: ""
+            if (rideID.isEmpty()) return@composable
+            Detail(navController, rideID)
         }
     }
 }

@@ -9,5 +9,7 @@ data class Ride(
     val destinationLongitude: Double? = null,
     val date: String = "",
     val time: String = "",
-    val seats: Int = 0
+    val seats: Int = 0,
+    val rideId: String = "",
+    val joinedUsers: List<String> = emptyList()
 )
