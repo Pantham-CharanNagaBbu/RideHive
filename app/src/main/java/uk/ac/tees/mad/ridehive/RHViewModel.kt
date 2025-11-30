@@ -12,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import uk.ac.tees.mad.ridehive.display.Destination
 import uk.ac.tees.mad.ridehive.model.Ride
 import uk.ac.tees.mad.ridehive.model.Users
@@ -178,6 +179,20 @@ constructor(
                 onError()
                 Toast.makeText(context, "Failed to post ride", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    suspend fun fetchRidebyID(context: Context,id: String): Ride? {
+        return try {
+            val document = firestore.collection("rides")
+                .document(id)
+                .get()
+                .await()
+            document.toObject(Ride::class.java)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Failed to fetch ride", Toast.LENGTH_SHORT).show()
+            Log.e("RHViewModel", "Error fetching ride: ${e.message}")
+            null
         }
     }
 
