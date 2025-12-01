@@ -39,7 +39,6 @@ fun Detail(
     var currentLat by remember { mutableStateOf<Double?>(null) }
     var currentLng by remember { mutableStateOf<Double?>(null) }
 
-    // Location permission
     var isLocationPermissionGranted by remember {
         mutableStateOf(
             androidx.core.content.ContextCompat.checkSelfPermission(
@@ -61,7 +60,6 @@ fun Detail(
         }
     }
 
-    // Fetch ride details and location
     LaunchedEffect(Unit) {
         ride = viewModel.fetchRidebyID(context, rideID)
 
@@ -91,8 +89,13 @@ fun Detail(
         },
         bottomBar = {
             if (ride != null) {
+                val shouldJoin = ride!!.joinedUsers.size < ride!!.seats
                 Button(
-                    onClick = { /* TODO: Join Ride */ },
+                    onClick = {
+                        viewModel.addMetoRide(context,rideID, onSuccess = {
+                            navController.popBackStack()
+                        })
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
@@ -100,9 +103,14 @@ fun Detail(
                     colors = ButtonDefaults.buttonColors(
                         containerColor = RideHivePrimary,
                         contentColor = Color.White
-                    )
+                    ),
+                    enabled = shouldJoin
                 ) {
-                    Text("Join Ride")
+                    if (shouldJoin){
+                        Text("Join Ride")
+                    }else{
+                        Text("Full")
+                    }
                 }
             }
         }
@@ -126,7 +134,6 @@ fun Detail(
 fun RideDetailCard(ride: Ride, currentLat: Double?, currentLng: Double?) {
     val pickupDistance = remember(currentLat, currentLng) {
         if (currentLat != null && currentLng != null && ride.from.isNotBlank()) {
-            // 🚨 assuming ride.from is stored as "lat,lng"
             val coords = ride.from.split(",")
             if (coords.size == 2) {
                 val lat = coords[0].toDoubleOrNull()
@@ -158,7 +165,6 @@ fun RideDetailCard(ride: Ride, currentLat: Double?, currentLng: Double?) {
             modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Driver Info
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.Person, contentDescription = null, tint = RideHivePrimary)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -173,7 +179,6 @@ fun RideDetailCard(ride: Ride, currentLat: Double?, currentLng: Double?) {
 
             Divider()
 
-            // Route
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.LocationOn, contentDescription = null, tint = RideHiveSecondary)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -183,21 +188,18 @@ fun RideDetailCard(ride: Ride, currentLat: Double?, currentLng: Double?) {
                 }
             }
 
-            // Date & Time
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.CalendarToday, contentDescription = null, tint = RideHivePrimary)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("${ride.date} at ${ride.time}", fontSize = 14.sp, color = RideHiveTextSecondary)
             }
 
-            // Seats
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.EventSeat, contentDescription = null, tint = RideHivePrimary)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("${ride.seats} seat(s) available", fontSize = 14.sp, color = RideHiveTextSecondary)
             }
 
-            // Distances
             if (pickupDistance != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.MyLocation, contentDescription = null, tint = RideHivePrimary)

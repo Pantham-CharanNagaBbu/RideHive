@@ -1,7 +1,11 @@
-package uk.ac.tees.mad.ridehive.model
+package uk.ac.tees.mad.ridehive.room
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-data class Ride(
+@Entity(tableName = "rides")
+data class RideRoom(
+    @PrimaryKey val id : Int = 0,
     val userUid: String = "",
     val userName: String = "",
     val from: String = "",
@@ -12,5 +16,4 @@ data class Ride(
     val time: String = "",
     val seats: Int = 0,
     val rideId: String = "",
-    val joinedUsers: List<String> = emptyList()
 )

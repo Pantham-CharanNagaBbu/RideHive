@@ -7,15 +7,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import uk.ac.tees.mad.ridehive.display.Destination
 import uk.ac.tees.mad.ridehive.model.Ride
 import uk.ac.tees.mad.ridehive.model.Users
+import uk.ac.tees.mad.ridehive.room.RideRoom
+import uk.ac.tees.mad.ridehive.room.RidesDao
 import javax.inject.Inject
 import kotlin.jvm.java
 
@@ -23,12 +29,14 @@ import kotlin.jvm.java
 class RHViewModel @Inject
 constructor(
     private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val ridesDao : RidesDao
 ): ViewModel() {
 
     val userLogin = mutableStateOf(false)
     val currentUser = mutableStateOf<Users?>(null)
-    val rides = mutableStateOf<List<Ride>>(emptyList())
+    private val _rides = MutableStateFlow<List<RideRoom>>(emptyList())
+    val rides: StateFlow<List<RideRoom>> = _rides.asStateFlow()
 
     sealed class AuthEvent {
         data class Success(val message: String) : AuthEvent()
@@ -111,16 +119,26 @@ constructor(
         }
     }
 
-    fun fetchRides(){
+    fun fetchRides() {
         viewModelScope.launch {
-            firestore.collection("rides")
-                .get().addOnSuccessListener {
-                    rides.value = it.toObjects(Ride::class.java)
-                }.addOnFailureListener {
-                    Log.e("RHViewModel", "Error fetching rides: ${it.message}")
-                }
+            try {
+                val firestoreRides = firestore.collection("rides")
+                    .get()
+                    .await()
+                    .toObjects(Ride::class.java)
+
+                val roomRides = firestoreRides.mapNotNull { it?.toRideRoom() }
+                ridesDao.deleteAllRides()
+                ridesDao.insertRide(roomRides)
+
+                _rides.value = ridesDao.getAllRides()
+            } catch (e: Exception) {
+                Log.e("RHViewModel", "Error fetching rides: ${e.message}")
+                _rides.value = ridesDao.getAllRides()
+            }
         }
     }
+
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _authEvents.send(AuthEvent.Loading)
@@ -182,6 +200,20 @@ constructor(
         }
     }
 
+    fun addMetoRide(context: Context, rideId: String, onSuccess: () -> Unit) {
+        viewModelScope.launch {
+            firestore.collection("rides").document(rideId)
+                .update("joinedUsers", FieldValue.arrayUnion(auth.currentUser?.uid))
+                .addOnSuccessListener {
+                    onSuccess()
+                    fetchRides()
+                    Toast.makeText(context, "Joined ride successfully", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(context, "Failed to join ride", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
     suspend fun fetchRidebyID(context: Context,id: String): Ride? {
         return try {
             val document = firestore.collection("rides")
@@ -194,6 +226,22 @@ constructor(
             Log.e("RHViewModel", "Error fetching ride: ${e.message}")
             null
         }
+    }
+
+    fun Ride?.toRideRoom(): RideRoom? {
+        if (this == null) return null
+        return RideRoom(
+            userUid = this.userUid,
+            userName = this.userName,
+            from = this.from,
+            destinationName = this.destinationName,
+            destinationLatitude = this.destinationLatitude,
+            destinationLongitude = this.destinationLongitude,
+            date = this.date,
+            time = this.time,
+            seats = this.seats,
+            rideId = this.rideId
+        )
     }
 
 }

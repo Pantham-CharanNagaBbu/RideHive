@@ -35,6 +35,7 @@ import uk.ac.tees.mad.ridehive.CustomBottomNavBar
 import uk.ac.tees.mad.ridehive.RHViewModel
 import uk.ac.tees.mad.ridehive.model.Ride
 import uk.ac.tees.mad.ridehive.navigation
+import uk.ac.tees.mad.ridehive.room.RideRoom
 import uk.ac.tees.mad.ridehive.ui.theme.*
 import uk.ac.tees.mad.ridehive.utilities.calculateDistance
 
@@ -44,7 +45,7 @@ fun Home(
     navController: NavController,
     viewModel: RHViewModel = hiltViewModel()
 ) {
-    val rides = viewModel.rides.value
+    val rides = viewModel.rides.collectAsState().value
 
     val context = LocalContext.current
     var isLocationPermissionGranted by remember {
@@ -170,7 +171,7 @@ fun Home(
 
 @Composable
 fun RideCard(
-    ride: Ride,
+    ride: RideRoom,
     currentLat: Double?,
     currentLng: Double?,
     onClick : () -> Unit
