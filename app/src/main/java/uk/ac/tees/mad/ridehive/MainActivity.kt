@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Route
 import androidx.navigation.NavController
 import uk.ac.tees.mad.ridehive.display.Detail
 import uk.ac.tees.mad.ridehive.display.PostRide
+import uk.ac.tees.mad.ridehive.display.Profile
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -67,7 +68,7 @@ fun CustomBottomNavBar(
         NavItem("Home", Icons.Default.Home, navigation.Home.route),
         NavItem("Post", Icons.Default.Add, navigation.PostRide.route),
         NavItem("My Rides", Icons.Default.Route, ""),
-        NavItem("Profile", Icons.Default.Person, "")
+        NavItem("Profile", Icons.Default.Person, navigation.Profile.route)
     )
 
     Box(
@@ -127,6 +128,7 @@ sealed class navigation(val route : String){
     object Detail : navigation("detail/{id}"){
         fun createRoute(id: String) = "detail/$id"
     }
+    object Profile : navigation("profile")
 }
 
 @Composable
@@ -168,5 +170,9 @@ fun RideHive(innerPadding: PaddingValues) {
             if (rideID.isEmpty()) return@composable
             Detail(navController, rideID)
         }
+        composable(navigation.Profile.route){
+            Profile(navController)
+        }
+
     }
 }

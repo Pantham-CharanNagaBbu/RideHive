@@ -22,6 +22,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -80,6 +81,21 @@ fun Home(
         }
     }
 
+    var searchQuery by remember { mutableStateOf("") }
+    var debouncedQuery by remember { mutableStateOf("") }
+
+    LaunchedEffect(searchQuery) {
+        kotlinx.coroutines.delay(400)
+        debouncedQuery = searchQuery
+    }
+
+    val filteredRides = remember(rides, debouncedQuery) {
+        if (debouncedQuery.isBlank()) rides
+        else rides.filter {
+            it.destinationName.contains(debouncedQuery, ignoreCase = true)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -125,7 +141,8 @@ fun Home(
                             if (ActivityCompat.shouldShowRequestPermissionRationale(
                                     context as Activity,
                                     Manifest.permission.ACCESS_FINE_LOCATION
-                                )) {
+                                )
+                            ) {
                                 permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                             } else {
                                 Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).also {
@@ -148,8 +165,26 @@ fun Home(
                 }
             }
 
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Search by destination...") },
+                shape = RoundedCornerShape(26.dp),
+                leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(26.dp)),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = RideHivePrimary,
+                    unfocusedBorderColor = Color.LightGray
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Text(
-                text = "Available Rides",
+                text = if (debouncedQuery.isBlank()) "Available Rides" else "Search Results",
                 style = MaterialTheme.typography.titleMedium,
                 color = RideHiveTextPrimary
             )
@@ -160,14 +195,19 @@ fun Home(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(rides) { ride ->
-                    RideCard(ride, currentLat, currentLng, onClick = {navController.navigate(
-                        navigation.Detail.createRoute(ride.rideId))})
+                items(filteredRides) { ride ->
+                    RideCard(
+                        ride = ride,
+                        currentLat = currentLat,
+                        currentLng = currentLng,
+                        onClick = { navController.navigate(navigation.Detail.createRoute(ride.rideId)) }
+                    )
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun RideCard(

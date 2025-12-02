@@ -34,7 +34,7 @@ constructor(
 ): ViewModel() {
 
     val userLogin = mutableStateOf(false)
-    val currentUser = mutableStateOf<Users?>(null)
+    val currentUser = MutableStateFlow<Users?>(null)
     private val _rides = MutableStateFlow<List<RideRoom>>(emptyList())
     val rides: StateFlow<List<RideRoom>> = _rides.asStateFlow()
 
@@ -93,18 +93,26 @@ constructor(
                                 "firstName" to firstName,
                                 "lastName" to lastName,
                                 "email" to email,
-                                "createdAt" to System.currentTimeMillis()
+                                "createdAt" to System.currentTimeMillis(),
+                                "photoUrl" to null,
                             )
 
                             firestore.collection("users")
                                 .document(userId)
                                 .set(userMap)
                                 .addOnSuccessListener {
-                                    viewModelScope.launch {
-                                        _authEvents.send(AuthEvent.Success("Account created successfully"))
-                                        fetchCurrentUser()
-                                        fetchRides()
-                                    }
+                                    firestore.collection("users").document(userId).update("uid", userId)
+                                        .addOnSuccessListener {
+                                            viewModelScope.launch {
+                                                _authEvents.send(AuthEvent.Success("Account created successfully"))
+                                                fetchCurrentUser()
+                                                fetchRides()
+                                            }
+                                        }.addOnFailureListener {
+                                            viewModelScope.launch {
+                                                _authEvents.send(AuthEvent.Error(it.message ?: "Failed to save user"))
+                                            }
+                                        }
                                 }
                                 .addOnFailureListener { e ->
                                     viewModelScope.launch {
