@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Route
 import androidx.navigation.NavController
 import uk.ac.tees.mad.ridehive.display.Detail
+import uk.ac.tees.mad.ridehive.display.MyRides
 import uk.ac.tees.mad.ridehive.display.PostRide
 import uk.ac.tees.mad.ridehive.display.Profile
 
@@ -67,7 +68,7 @@ fun CustomBottomNavBar(
     val navItems = listOf(
         NavItem("Home", Icons.Default.Home, navigation.Home.route),
         NavItem("Post", Icons.Default.Add, navigation.PostRide.route),
-        NavItem("My Rides", Icons.Default.Route, ""),
+        NavItem("My Rides", Icons.Default.Route, navigation.MyRides.route),
         NavItem("Profile", Icons.Default.Person, navigation.Profile.route)
     )
 
@@ -129,6 +130,7 @@ sealed class navigation(val route : String){
         fun createRoute(id: String) = "detail/$id"
     }
     object Profile : navigation("profile")
+    object MyRides : navigation("myrides")
 }
 
 @Composable
@@ -173,6 +175,8 @@ fun RideHive(innerPadding: PaddingValues) {
         composable(navigation.Profile.route){
             Profile(navController)
         }
-
+        composable(navigation.MyRides.route){
+            MyRides(navController)
+        }
     }
 }

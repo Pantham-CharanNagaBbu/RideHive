@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -19,6 +18,7 @@ import uk.ac.tees.mad.ridehive.CustomBottomNavBar
 import uk.ac.tees.mad.ridehive.navigation
 import uk.ac.tees.mad.ridehive.ui.theme.*
 import android.location.Location
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.location.LocationServices
@@ -86,7 +86,8 @@ fun PostRide(
                 selectedRoute = navigation.PostRide.route,
                 navController = navController
             )
-        }
+        },
+        modifier = Modifier.systemBarsPadding()
     ) {
         Column(
             modifier = Modifier

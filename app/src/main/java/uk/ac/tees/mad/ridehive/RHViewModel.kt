@@ -1,15 +1,19 @@
 package uk.ac.tees.mad.ridehive
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cloudinary.Cloudinary
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,11 +21,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import uk.ac.tees.mad.ridehive.display.Destination
 import uk.ac.tees.mad.ridehive.model.Ride
 import uk.ac.tees.mad.ridehive.model.Users
 import uk.ac.tees.mad.ridehive.room.RideRoom
 import uk.ac.tees.mad.ridehive.room.RidesDao
+import java.io.File
 import javax.inject.Inject
 import kotlin.jvm.java
 
@@ -57,6 +63,94 @@ constructor(
             fetchCurrentUser()
         }
     }
+
+    private val cloudinaryConfig = hashMapOf(
+        "cloud_name" to "dn8ycjojw",
+        "api_key" to "281678982458183",
+        "api_secret" to "77nO2JN3hkGXB-YgGZuJOqXcA4Q"
+    )
+    private val cloudinary = Cloudinary(cloudinaryConfig)
+
+    private fun getFileFromUri(context: Context, uri: Uri): File? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val tempFile = File.createTempFile("upload_", ".jpg", context.cacheDir)
+            tempFile.outputStream().use { output -> inputStream.copyTo(output) }
+            Log.d("ComplaintViewModel", "File created: ${tempFile.absolutePath}")
+            tempFile
+        } catch (e: Exception) {
+            Log.e("ComplaintViewModel", "Error in getFileFromUri: ${e.message}", e)
+            null
+        }
+    }
+
+    fun updateProfile(
+        context: Context,
+        firstName: String,
+        lastName: String,
+        photoUri: Uri? = null,
+        photoBitmap: android.graphics.Bitmap? = null,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        val firebaseUser = auth.currentUser ?: return onResult(false, "User not logged in")
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                var photoUrl: String? = null
+
+                // Gallery upload
+                if (photoUri != null) {
+                    Log.d("RHViewModel", "Uploading from URI: $photoUri")
+                    val file = getFileFromUri(context, photoUri)
+                    if (file != null) {
+                        val uploadResult = cloudinary.uploader()
+                            .upload(file, emptyMap<String, String>())
+                        photoUrl = uploadResult["secure_url"] as String
+                        Log.d("RHViewModel", "Uploaded URI, got URL: $photoUrl")
+                    }
+                }
+
+                // Camera upload
+                if (photoBitmap != null) {
+                    Log.d("RHViewModel", "Uploading from Bitmap")
+                    val tempFile = File.createTempFile("camera_upload_", ".jpg", context.cacheDir)
+                    tempFile.outputStream().use { out ->
+                        photoBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out)
+                    }
+                    val uploadResult = cloudinary.uploader()
+                        .upload(tempFile, emptyMap<String, String>())
+                    photoUrl = uploadResult["secure_url"] as String
+                    Log.d("RHViewModel", "Uploaded Bitmap, got URL: $photoUrl")
+                }
+
+                // Firestore update
+                val updates = mutableMapOf<String, Any>(
+                    "firstName" to firstName,
+                    "lastName" to lastName
+                )
+                if (photoUrl != null) updates["photoUrl"] = photoUrl
+
+                firestore.collection("users")
+                    .document(firebaseUser.uid)
+                    .update(updates)
+                    .await()
+
+                fetchCurrentUser()
+
+                withContext(Dispatchers.Main) {
+                    onResult(true, "Profile updated successfully")
+                }
+            } catch (e: Exception) {
+                Log.e("RHViewModel", "Profile update failed", e)
+                withContext(Dispatchers.Main) {
+                    onResult(false, e.message ?: "Unknown error")
+                }
+            }
+        }
+    }
+
+
+
 
     private fun fetchCurrentUser() {
         viewModelScope.launch {

@@ -113,7 +113,8 @@ fun Home(
                 selectedRoute = navigation.Home.route,
                 navController = navController
             )
-        }
+        },
+        modifier = Modifier.systemBarsPadding()
     ) { padding ->
         Column(
             modifier = Modifier

@@ -1,13 +1,14 @@
 package uk.ac.tees.mad.ridehive.display
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -52,7 +54,8 @@ fun Profile(
                 selectedRoute = navigation.Profile.route,
                 navController = navController
             )
-        }
+        },
+        modifier = Modifier.systemBarsPadding()
     ) { padding ->
         Column(
             modifier = Modifier
@@ -60,8 +63,7 @@ fun Profile(
                 .background(RideHiveBackground)
                 .padding(padding)
                 .padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
                 painter = rememberAsyncImagePainter(user?.photoUrl ?: ""),
@@ -75,8 +77,10 @@ fun Profile(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(user?.firstName ?: "Unknown User", style = MaterialTheme.typography.titleMedium)
-            Text(user?.lastName ?: "Unknown User", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "${user?.firstName ?: ""} ${user?.lastName ?: ""}",
+                style = MaterialTheme.typography.titleMedium
+            )
             Text(user?.email ?: "", style = MaterialTheme.typography.bodyMedium, color = RideHiveTextSecondary)
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -94,8 +98,7 @@ fun Profile(
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedButton(
-                onClick = { //onLogout()
-                          },
+                onClick = { /* viewModel.logout() */ },
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -107,12 +110,12 @@ fun Profile(
 
         if (showEditDialog) {
             EditProfileDialog(
-                currentName = user?.firstName ?: "",
+                currentFirstName = user?.firstName ?: "",
+                currentLastName = user?.lastName ?: "",
+                currentPhotoUrl = user?.photoUrl,
                 onDismiss = { showEditDialog = false },
-                onUpdate = { newName, newPhoto ->
-                    //viewModel.updateProfile(newName, newPhoto)
-                    showEditDialog = false
-                }
+                viewModel,
+                context = LocalContext.current
             )
         }
     }
@@ -120,35 +123,79 @@ fun Profile(
 
 @Composable
 fun EditProfileDialog(
-    currentName: String,
+    currentFirstName: String,
+    currentLastName: String,
+    currentPhotoUrl: String?,
     onDismiss: () -> Unit,
-    onUpdate: (String, Uri?) -> Unit
-) {
-    var name by remember { mutableStateOf(currentName) }
+    viewModel: RHViewModel = hiltViewModel(),
+    context: Context,
+    ) {
+    var firstName by remember { mutableStateOf(currentFirstName) }
+    var lastName by remember { mutableStateOf(currentLastName) }
     var photoUri by remember { mutableStateOf<Uri?>(null) }
+    var previewBitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
 
-    // Gallery picker
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri -> photoUri = uri }
 
-    // Camera picker
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bitmap ->
-        // Convert bitmap to Uri if you need upload support
-        // For now just ignore or save temp
+        previewBitmap = bitmap
     }
+
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Edit Profile") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // Profile Image Preview
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                    if (photoUri != null) {
+                        Image(
+                            painter = rememberAsyncImagePainter(photoUri),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (previewBitmap != null) {
+                        Image(
+                            bitmap = previewBitmap!!.asImageBitmap(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Image(
+                            painter = rememberAsyncImagePainter(currentPhotoUrl ?: ""),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .background(Color.LightGray),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                }
+
                 OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Name") },
+                    value = firstName,
+                    onValueChange = { firstName = it },
+                    label = { Text("First Name") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(26.dp)
+                )
+
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = { lastName = it },
+                    label = { Text("Last Name") },
                     singleLine = true,
                     shape = RoundedCornerShape(26.dp)
                 )
@@ -171,8 +218,36 @@ fun EditProfileDialog(
         },
         confirmButton = {
             Button(
-                onClick = { onUpdate(name, photoUri) },
-                colors = ButtonDefaults.buttonColors(containerColor = RideHivePrimary)
+                onClick = {
+                    if (firstName.isBlank() || lastName.isBlank()) {
+                        Toast.makeText(context, "Please enter name", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    if (photoUri == null && previewBitmap == null) {
+                        viewModel.updateProfile(
+                            context = context,
+                            firstName = firstName,
+                            lastName = lastName,
+                            photoUri = null,
+                            photoBitmap = null
+                        ) { success, message ->
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            if (success) onDismiss()
+                        }
+                    } else {
+                        viewModel.updateProfile(
+                            context = context,
+                            firstName = firstName,
+                            lastName = lastName,
+                            photoUri = photoUri,
+                            photoBitmap = previewBitmap
+                        ) { success, message ->
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            if (success) onDismiss()
+                        }
+                    }
+                }
             ) {
                 Text("Update", color = Color.White)
             }

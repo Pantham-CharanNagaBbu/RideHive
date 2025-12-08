@@ -77,6 +77,7 @@ fun Detail(
     }
 
     Scaffold(
+        modifier = Modifier.systemBarsPadding(),
         topBar = {
             TopAppBar(
                 title = { Text("Ride Details", color = RideHiveTextPrimary) },
