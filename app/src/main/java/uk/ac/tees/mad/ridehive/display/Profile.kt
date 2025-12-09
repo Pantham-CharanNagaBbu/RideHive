@@ -24,7 +24,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
@@ -98,7 +101,11 @@ fun Profile(
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedButton(
-                onClick = { /* viewModel.logout() */ },
+                onClick = {
+                    navController.navigate(navigation.Login.route){
+                        popUpTo(0)
+                    }
+                    viewModel.logout() },
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -151,7 +158,6 @@ fun EditProfileDialog(
         title = { Text("Edit Profile") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                // Profile Image Preview
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
                     if (photoUri != null) {
                         Image(
@@ -258,4 +264,87 @@ fun EditProfileDialog(
             }
         }
     )
+}
+@Preview(showBackground = true, name = "RideHive – Profile Screen")
+@Composable
+fun ProfileScreenPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0D1B2A))
+            .padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Top bar placeholder
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .background(Color(0xFF1B98E0)),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Text(
+                text = "Profile",
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(start = 16.dp)
+            )
+        }
+
+        Spacer(Modifier.height(40.dp))
+
+        // Profile Picture
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF415A77)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("JD", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Text("John", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text("Doe", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text("john.doe@example.com", fontSize = 16.sp, color = Color(0xFF778DA9))
+
+        Spacer(Modifier.height(40.dp))
+
+        Button(
+            onClick = {},
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE63946))
+        ) {
+            Icon(Icons.Default.Edit, contentDescription = null, tint = Color.White)
+            Spacer(Modifier.width(8.dp))
+            Text("Edit Profile", color = Color.White)
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        OutlinedButton(
+            onClick = {},
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+        ) {
+            Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color.Red)
+            Spacer(Modifier.width(8.dp))
+            Text("Logout", color = Color.Red)
+        }
+
+        Spacer(Modifier.height(40.dp))
+
+        // Bottom nav placeholder
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .background(Color(0xFF1B263B))
+        )
+    }
 }

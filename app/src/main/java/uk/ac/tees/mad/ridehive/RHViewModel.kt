@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cloudinary.Cloudinary
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.userProfileChangeRequest
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -65,11 +64,31 @@ constructor(
     }
 
     private val cloudinaryConfig = hashMapOf(
-        "cloud_name" to "dn8ycjojw",
-        "api_key" to "281678982458183",
-        "api_secret" to "77nO2JN3hkGXB-YgGZuJOqXcA4Q"
+        "cloud_name" to "dxz1u2r4o",
+        "api_key" to "762543111378498",
+        "api_secret" to "dLnezlfOSHNaRKQuyQ224TcOBsY"
     )
+
     private val cloudinary = Cloudinary(cloudinaryConfig)
+
+    fun delete(ride: RideRoom, context: Context, onDelete: ()-> Unit) {
+        viewModelScope.launch {
+            try {
+                firestore.collection("rides")
+                    .document(ride.rideId)
+                    .delete()
+                    .await()
+
+
+                fetchRides()
+                Toast.makeText(context, "Deleted Successfully", Toast.LENGTH_SHORT).show()
+                onDelete()
+
+            } catch (e: Exception) {
+                Log.e("RHViewModel", "Failed to delete ride: ${e.message}")
+            }
+        }
+    }
 
     private fun getFileFromUri(context: Context, uri: Uri): File? {
         return try {
@@ -98,7 +117,6 @@ constructor(
             try {
                 var photoUrl: String? = null
 
-                // Gallery upload
                 if (photoUri != null) {
                     Log.d("RHViewModel", "Uploading from URI: $photoUri")
                     val file = getFileFromUri(context, photoUri)
@@ -110,7 +128,6 @@ constructor(
                     }
                 }
 
-                // Camera upload
                 if (photoBitmap != null) {
                     Log.d("RHViewModel", "Uploading from Bitmap")
                     val tempFile = File.createTempFile("camera_upload_", ".jpg", context.cacheDir)
@@ -123,7 +140,6 @@ constructor(
                     Log.d("RHViewModel", "Uploaded Bitmap, got URL: $photoUrl")
                 }
 
-                // Firestore update
                 val updates = mutableMapOf<String, Any>(
                     "firstName" to firstName,
                     "lastName" to lastName
@@ -149,8 +165,9 @@ constructor(
         }
     }
 
-
-
+    fun logout(){
+        auth.signOut()
+    }
 
     private fun fetchCurrentUser() {
         viewModelScope.launch {
@@ -228,12 +245,13 @@ constructor(
                     .get()
                     .await()
                     .toObjects(Ride::class.java)
-
+                Log.d("RideFirestore", firestoreRides.toString())
                 val roomRides = firestoreRides.mapNotNull { it?.toRideRoom() }
                 ridesDao.deleteAllRides()
                 ridesDao.insertRide(roomRides)
 
                 _rides.value = ridesDao.getAllRides()
+                Log.d("Ride", _rides.value.toString())
             } catch (e: Exception) {
                 Log.e("RHViewModel", "Error fetching rides: ${e.message}")
                 _rides.value = ridesDao.getAllRides()
@@ -333,6 +351,7 @@ constructor(
     fun Ride?.toRideRoom(): RideRoom? {
         if (this == null) return null
         return RideRoom(
+            rideId = this.rideId,
             userUid = this.userUid,
             userName = this.userName,
             from = this.from,
@@ -341,8 +360,7 @@ constructor(
             destinationLongitude = this.destinationLongitude,
             date = this.date,
             time = this.time,
-            seats = this.seats,
-            rideId = this.rideId
+            seats = this.seats
         )
     }
 

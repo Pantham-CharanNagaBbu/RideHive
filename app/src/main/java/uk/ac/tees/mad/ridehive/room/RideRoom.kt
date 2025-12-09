@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "rides")
 data class RideRoom(
-    @PrimaryKey val id : Int = 0,
+    @PrimaryKey val rideId: String,   // <-- primary key MUST BE UNIQUE
     val userUid: String = "",
     val userName: String = "",
     val from: String = "",
@@ -14,6 +14,6 @@ data class RideRoom(
     val destinationLongitude: Double? = null,
     val date: String = "",
     val time: String = "",
-    val seats: Int = 0,
-    val rideId: String = "",
+    val seats: Int = 0
 )
+

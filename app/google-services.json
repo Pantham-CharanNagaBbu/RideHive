@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "749921480758",
-    "project_id": "ridehive-447ae",
-    "storage_bucket": "ridehive-447ae.firebasestorage.app"
+    "project_number": "763930145428",
+    "project_id": "ridehive-8c13d",
+    "storage_bucket": "ridehive-8c13d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:749921480758:android:d82b4cca21cab614302897",
+        "mobilesdk_app_id": "1:763930145428:android:b61373c2b6dff18ac37a81",
         "android_client_info": {
           "package_name": "uk.ac.tees.mad.ridehive"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBawBdYfacBy_3FMexJeiLGTQWGUcG1Vd8"
+          "current_key": "AIzaSyBJ5vm6ln6JzKmJD_MJYdDA99ega1w46gs"
         }
       ],
       "services": {

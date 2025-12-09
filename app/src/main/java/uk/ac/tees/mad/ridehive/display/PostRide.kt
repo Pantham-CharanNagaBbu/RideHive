@@ -18,8 +18,13 @@ import uk.ac.tees.mad.ridehive.CustomBottomNavBar
 import uk.ac.tees.mad.ridehive.navigation
 import uk.ac.tees.mad.ridehive.ui.theme.*
 import android.location.Location
+import androidx.compose.foundation.background
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.location.LocationServices
 import uk.ac.tees.mad.ridehive.RHViewModel
@@ -246,6 +251,139 @@ fun PostRide(
                     Text("Post Ride")
                 }
             }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(showBackground = true, name = "RideHive – Post Ride")
+@Composable
+fun PostRideScreenPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0D1B2A))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "Post a Ride",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFFE63946)
+        )
+
+        Spacer(Modifier.height(32.dp))
+
+        Text(
+            text = "Pickup: Your Current Location",
+            fontSize = 16.sp,
+            color = Color(0xFF778DA9)
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        // Destination dropdown
+        var expanded by remember { mutableStateOf(false) }
+        var selected by remember { mutableStateOf("Teesside University") }
+
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            OutlinedTextField(
+                value = selected,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Destination") },
+                leadingIcon = {
+                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color(0xFFE63946))
+                },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth(),
+                shape = RoundedCornerShape(26.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE63946),
+                    unfocusedBorderColor = Color(0xFF415A77)
+                )
+            )
+            ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                listOf("Teesside University", "Middlesbrough College", "Cineworld", "James Cook Hospital").forEach {
+                    DropdownMenuItem(
+                        text = { Text(it) },
+                        onClick = {
+                            selected = it
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            text = "Distance: 3.2 km",
+            color = Color(0xFFE63946),
+            fontSize = 16.sp
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        OutlinedTextField(
+            value = "17/09/2025",
+            onValueChange = {},
+            label = { Text("Date (e.g. 17/09/2025)") },
+            leadingIcon = { Icon(Icons.Default.CalendarToday, null, tint = Color(0xFFE63946)) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(26.dp)
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = "10:00 AM",
+            onValueChange = {},
+            label = { Text("Time (e.g. 10:00 AM)") },
+            leadingIcon = { Icon(Icons.Default.Schedule, null, tint = Color(0xFFE63946)) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(26.dp)
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = "3",
+            onValueChange = {},
+            label = { Text("Available Seats") },
+            leadingIcon = { Icon(Icons.Default.EventSeat, null, tint = Color(0xFFE63946)) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(26.dp)
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = "Going via town center",
+            onValueChange = {},
+            label = { Text("Notes (Optional)") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(26.dp)
+        )
+
+        Spacer(Modifier.height(32.dp))
+
+        Button(
+            onClick = {},
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(26.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE63946))
+        ) {
+            Text("Post Ride", color = Color.White, fontSize = 18.sp)
         }
     }
 }

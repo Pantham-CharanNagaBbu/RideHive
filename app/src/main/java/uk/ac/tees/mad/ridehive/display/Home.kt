@@ -25,6 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -312,3 +314,123 @@ fun RideCard(
     }
 }
 
+@Preview(showBackground = true, name = "RideHive – Home Screen")
+@Composable
+fun HomeScreenPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0D1B2A))
+            .padding(16.dp)
+    ) {
+        // Top bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF1B263B))
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "RideHive",
+                color = Color(0xFFE63946),
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        // Search field
+        OutlinedTextField(
+            value = "",
+            onValueChange = {},
+            placeholder = { Text("Search by destination...") },
+            leadingIcon = { Icon(Icons.Default.LocationOn, null, tint = Color(0xFFE63946)) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(26.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFFE63946),
+                unfocusedBorderColor = Color(0xFF415A77)
+            )
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            text = "Available Rides",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        // Sample rides
+        val sampleRides = listOf(
+            Triple("Emma Wilson", "Teesside University", "10:30 AM", ),
+            Triple("Alex Chen", "Middlesbrough College", "11:15 AM", ),
+            Triple("Sarah Khan", "Cineworld", "2:00 PM", )
+        )
+
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            items(sampleRides) { index ->
+
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { },
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(6.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Person, null, tint = Color(0xFFE63946))
+                            Spacer(Modifier.width(8.dp))
+                            Text(index.first, fontWeight = FontWeight.Bold, color = Color.Black)
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.LocationOn, null, tint = Color(0xFF778DA9))
+                            Spacer(Modifier.width(8.dp))
+                            Text("→ ${index.second}", color = Color(0xFF778DA9))
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.DirectionsCar, null, tint = Color(0xFFE63946))
+                                Spacer(Modifier.width(8.dp))
+                                Text("time", color = Color.Gray)
+                            }
+                            Text(
+                                "${index.third} seats left",
+                                color = Color(0xFF2A9D8F),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(Modifier.height(8.dp))
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Rounded.Route, null, tint = Color(0xFF778DA9))
+                            Spacer(Modifier.width(8.dp))
+                            Column {
+                                Text("Pickup Distance: 1.2 km", color = Color.Gray, fontSize = 14.sp)
+                                Text("Destination Distance: 3.8 km", color = Color.Gray, fontSize = 14.sp)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

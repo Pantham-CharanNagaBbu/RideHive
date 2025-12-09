@@ -1,5 +1,6 @@
 package uk.ac.tees.mad.ridehive.display
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -9,9 +10,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.collectLatest
@@ -137,6 +142,94 @@ fun Login(
                     color = RideHiveSecondary
                 )
             }
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "RideHive – Login Screen")
+@Composable
+fun LoginScreenPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0D1B2A)) // Dark navy background
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "RideHive",
+            fontSize = 40.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFFE63946) // RideHivePrimary red
+        )
+
+        Text(
+            text = "Welcome back, log in",
+            fontSize = 18.sp,
+            color = Color(0xFF778DA9) // RideHiveTextSecondary
+        )
+
+        Spacer(Modifier.height(40.dp))
+
+        OutlinedTextField(
+            value = "john.doe@example.com",
+            onValueChange = {},
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(26.dp),
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFFE63946),
+                unfocusedBorderColor = Color(0xFF415A77),
+                focusedLabelColor = Color(0xFFE63946),
+                cursorColor = Color(0xFFE63946)
+            )
+        )
+
+        Spacer(Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = "••••••••",
+            onValueChange = {},
+            label = { Text("Password") },
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(26.dp),
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            trailingIcon = {
+                Icon(
+                    imageVector = Icons.Default.VisibilityOff,
+                    contentDescription = "Toggle visibility",
+                    tint = Color(0xFFE63946)
+                )
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFFE63946),
+                unfocusedBorderColor = Color(0xFF415A77),
+                focusedLabelColor = Color(0xFFE63946),
+                cursorColor = Color(0xFFE63946)
+            )
+        )
+
+        Spacer(Modifier.height(40.dp))
+
+        Button(
+            onClick = {},
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(26.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE63946))
+        ) {
+            Text("Login", color = Color.White, fontSize = 18.sp)
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        TextButton(onClick = {}) {
+            Text(
+                "Don’t have an account? Sign up",
+                color = Color(0xFF778DA9)
+            )
         }
     }
 }

@@ -6,6 +6,7 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -217,5 +219,113 @@ fun RideDetailCard(ride: Ride, currentLat: Double?, currentLng: Double?) {
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "RideHive – Ride Detail")
+@Composable
+fun RideDetailScreenPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0D1B2A))
+            .padding(16.dp)
+    ) {
+        // Top bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF1B263B))
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White,
+                modifier = Modifier.size(28.dp)
+            )
+            Spacer(Modifier.width(16.dp))
+            Text(
+                "Ride Details",
+                color = Color.White,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Spacer(Modifier.height(32.dp))
+
+        // Ride Detail Card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(8.dp)
+        ) {
+            Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Person, null, tint = Color(0xFFE63946))
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        "Emma Wilson",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
+
+                HorizontalDivider(color = Color.LightGray)
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.LocationOn, null, tint = Color(0xFF778DA9))
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text("Pickup: Your Current Location", color = Color(0xFF666666))
+                        Text("Destination: Teesside University", color = Color(0xFF666666))
+                    }
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.CalendarToday, null, tint = Color(0xFFE63946))
+                    Spacer(Modifier.width(12.dp))
+                    Text("17 Sep 2025 at 10:30 AM", color = Color(0xFF666666))
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.EventSeat, null, tint = Color(0xFFE63946))
+                    Spacer(Modifier.width(12.dp))
+                    Text("3 seat(s) available", color = Color(0xFF666666))
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.MyLocation, null, tint = Color(0xFFE63946))
+                    Spacer(Modifier.width(12.dp))
+                    Text("Pickup is 1.2 km from you", color = Color(0xFF666666))
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.DirectionsCar, null, tint = Color(0xFF778DA9))
+                    Spacer(Modifier.width(12.dp))
+                    Text("Destination is 3.8 km from you", color = Color(0xFF666666))
+                }
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        // Join Ride Button
+        Button(
+            onClick = {},
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            shape = RoundedCornerShape(26.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE63946))
+        ) {
+            Text("Join Ride", color = Color.White, fontSize = 18.sp)
+        }
+
+        Spacer(Modifier.height(100.dp)) // Bottom padding
     }
 }
